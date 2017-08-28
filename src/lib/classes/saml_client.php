@@ -9,14 +9,14 @@ class SAML_Client
     $this->settings = new SAML_Settings();
 
     require_once(constant('SAMLAUTH_ROOT') . '/saml/lib/_autoload.php');
-		if( $this->settings->get_enabled() )
-		{
-			$this->saml = new SimpleSAML_Auth_Simple((string)get_current_blog_id());
+    if( $this->settings->get_enabled() )
+    {
+      $this->saml = new SimpleSAML_Auth_Simple((string)get_current_blog_id());
 
-			add_action('wp_authenticate',array($this,'authenticate'));
-	    add_action('wp_logout',array($this,'logout'));
+      add_action('wp_authenticate',array($this,'authenticate'));
+      add_action('wp_logout',array($this,'logout'));
       add_action('login_form', array($this, 'modify_login_form'));
-		}
+    }
   }
 
   /**
@@ -26,7 +26,7 @@ class SAML_Client
    */
   public function authenticate()
   {
-    if( isset($_GET['loggedout']) && $_GET['loggedout'] == 'true' )
+    if ( isset($_GET['loggedout']) && $_GET['loggedout'] == 'true' )
     {
       header('Location: ' . get_option('siteurl'));
       exit();
@@ -136,15 +136,11 @@ class SAML_Client
     $this->update_role();
     $user = get_user_by('login', $username);
     wp_set_auth_cookie($user->ID);
+    $requested_redirect_to = array_key_exists('redirect_to', $_GET) ? $_GET['redirect_to'] : '';
+    $redirect_to = $requested_redirect_to ? $requested_redirect_to : get_admin_url();
+    $redirect = apply_filters( 'login_redirect', $redirect_to, $requested_redirect_to, $user );
 
-    if( array_key_exists('redirect_to', $_GET) )
-    {
-      wp_redirect( $_GET['redirect_to'] );
-    }
-    else
-    {
-      wp_redirect(get_admin_url());
-    }
+    wp_redirect( $redirect );
     exit();
   }
 
